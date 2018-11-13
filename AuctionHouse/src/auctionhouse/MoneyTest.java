@@ -50,6 +50,10 @@ public class MoneyTest {
     
     @Test 
     public void testLessEqual() {
+        Money val1 = new Money("10.00");
+        Money val2 = new Money("9.99");
+        Money result = val1.lessEqual(val2);
+        assertTrue(result);
     	
     }
     
