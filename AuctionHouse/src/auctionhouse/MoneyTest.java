@@ -51,10 +51,15 @@ public class MoneyTest {
     
     @Test 
     public void testLessEqual() {
-        Money val1 = new Money("10.00");
-        Money val2 = new Money("9.99");
-        boolean result = val1.lessEqual(val2);
-        assertTrue(result);
+        Money val1 = new Money("9.98");
+        Money val2 = new Money("10.0");
+        Money val3 = new Money("10.0");
+        boolean result1 = val1.lessEqual(val2);
+        boolean result2 = val2.lessEqual(val3);
+        boolean result3 = val2.lessEqual(val1);
+        assertTrue(result1);
+        assertTrue(result2);
+        assertFalse(result3);
     	
     }
     
@@ -62,8 +67,10 @@ public class MoneyTest {
     public void testEqual() {
     	Money val1 = new Money("9.99");
         Money val2 = new Money("9.99");
+        Money val3 = new Money("10.0");
         boolean result = val1.equals(val2);
         assertTrue(result);
+        assertFalse(val1.equals(val3));
     }
 
     /*
