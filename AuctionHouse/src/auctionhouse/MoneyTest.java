@@ -45,8 +45,12 @@ public class MoneyTest {
     
     @Test
     public void testCompareTo() {
-        
-    	
+        Money val1 = new Money("7.88");
+        Money val2 = new Money("9.88");
+        Money val3 = new Money("7.88");        
+        assertEquals(-1, val1.compareTo(val2));
+        assertEquals(1, val2.compareTo(val3));
+        assertEquals(0, val1.compareTo(val3));   	
     }
     
     @Test 
