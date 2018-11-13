@@ -30,17 +30,21 @@ public class MoneyTest {
     public void testSubtract() {
     	Money val1 = new Money("13.66");
         Money val2 = new Money("0.66");
-        Money result = val1.add(val2);
+        Money result = val1.subtract(val2);
         assertEquals("13.00", result.toString());
     }
     
     @Test
     public void testAddPercent() {
-    	
+    	Money val1 = new Money("10.00");
+        double percent = 50.0;
+        Money result = val1.addPercent(percent);
+        assertEquals("15.00",result.toString());
     }
     
     @Test
     public void testCompareTo() {
+        
     	
     }
     
