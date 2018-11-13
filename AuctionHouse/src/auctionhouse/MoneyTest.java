@@ -52,14 +52,17 @@ public class MoneyTest {
     public void testLessEqual() {
         Money val1 = new Money("10.00");
         Money val2 = new Money("9.99");
-        Money result = val1.lessEqual(val2);
+        boolean result = val1.lessEqual(val2);
         assertTrue(result);
     	
     }
     
     @Test
     public void testEqual() {
-    	
+    	Money val1 = new Money("9.99");
+        Money val2 = new Money("9.99");
+        boolean result = val1.equals(val2);
+        assertTrue(result);
     }
 
     /*
