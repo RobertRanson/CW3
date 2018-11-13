@@ -28,7 +28,10 @@ public class MoneyTest {
      */
     @Test
     public void testSubtract() {
-    	
+    	Money val1 = new Money("13.66");
+        Money val2 = new Money("0.66");
+        Money result = val1.add(val2);
+        assertEquals("13.00", result.toString());
     }
     
     @Test
