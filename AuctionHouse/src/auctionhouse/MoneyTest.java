@@ -26,7 +26,30 @@ public class MoneyTest {
      ***********************************************************************
      * Add all your JUnit tests for the Money class below.
      */
-
+    @Test
+    public void testSubtract() {
+    	
+    }
+    
+    @Test
+    public void testAddPercent() {
+    	
+    }
+    
+    @Test
+    public void testCompareTo() {
+    	
+    }
+    
+    @Test 
+    public void testLessEqual() {
+    	
+    }
+    
+    @Test
+    public void testEqual() {
+    	
+    }
 
     /*
      * Put all class modifications above.
