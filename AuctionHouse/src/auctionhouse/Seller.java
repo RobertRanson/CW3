@@ -6,9 +6,9 @@ public class Seller {
     	private String bankAccount;
 	
 	public Seller(String name, String address, String bankAcount) {
-		name = this.name;
-		address = this.address;
-		bankAcount = this.bankAccount;
+		this.name = name;
+		this.address = address;
+		this.bankAcount = bankAccount;
 	}
 	
 
