@@ -6,10 +6,10 @@ public class Buyer {
     	private String bankAccount;
     	private String bankAuthCode;
 	
-	public Buyer(String name, String address, String bankAcount, String bankAuth) {
+	public Buyer(String name, String address, String bankAccount, String bankAuth) {
 		this.name = name;
 		this.address = address;
-		this.bankAcount = bankAccount;
+		this.bankAccount = bankAccount;
 		this.bankAuthCode = bankAuth;
 	}
 	
