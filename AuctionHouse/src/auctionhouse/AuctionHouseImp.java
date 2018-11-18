@@ -4,6 +4,7 @@
 package auctionhouse;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -12,6 +13,9 @@ import java.util.logging.Logger;
  *
  */
 public class AuctionHouseImp implements AuctionHouse {
+	
+	private HashMap<String, Buyer> buyerlist = new HashMap<>();
+	private HashMap<String, Seller> sellerlist = new HashMap<>();
 
     private static Logger logger = Logger.getLogger("auctionhouse");
     private static final String LS = System.lineSeparator();
@@ -35,9 +39,16 @@ public class AuctionHouseImp implements AuctionHouse {
         logger.fine(startBanner("registerBuyer " + name));
         
         Buyer newBuyer = new Buyer(name, address, bankAccount, bankAuthCode);
-        logger.fine("new Buyer was added");
+        if (buyerlist.containsKey(name)) {
+        	logger.finer("Buyer is alread registed.");
+        	return Status.error("Buyer is already registed.");
+        }
+        else {
+        	buyerlist.put(name, newBuyer);
+        	return Status.OK();
+        }
         
-        return Status.OK();
+        
     }
 
     public Status registerSeller(
@@ -56,11 +67,7 @@ public class AuctionHouseImp implements AuctionHouse {
             String description,
             Money reservePrice) {
         logger.fine(startBanner("addLot " + sellerName + " " + number));
-        //CatalogueEntry c = new CatalogueEntry(number, description, UNSOLD);
-        
         //Lot l = new Lot
-        Lot newLot = new Lot(sellerName,number,description,reservePrice);
-        logger.fine(startBanner("Added new lot with lot ID: " + number));
         //logger.fine(new Lot with lot id 123 was added)
         //seller registers lot
         //add to catalogue
