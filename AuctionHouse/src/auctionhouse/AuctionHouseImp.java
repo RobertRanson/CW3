@@ -56,6 +56,8 @@ public class AuctionHouseImp implements AuctionHouse {
             String description,
             Money reservePrice) {
         logger.fine(startBanner("addLot " + sellerName + " " + number));
+        //CatalogueEntry c = new CatalogueEntry(number, description, UNSOLD);
+        
         //Lot l = new Lot
         //logger.fine(new Lot with lot id 123 was added)
         //seller registers lot
