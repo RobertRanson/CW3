@@ -34,7 +34,7 @@ public class AuctionHouseImp implements AuctionHouse {
             String bankAuthCode) {
         logger.fine(startBanner("registerBuyer " + name));
         
-        Buyer Buyer = new Buyer(name, address, bankAccount, bankAuthCode);
+        Buyer newBuyer = new Buyer(name, address, bankAccount, bankAuthCode);
         logger.fine("new Buyer was added");
         
         return Status.OK();
@@ -59,6 +59,8 @@ public class AuctionHouseImp implements AuctionHouse {
         //CatalogueEntry c = new CatalogueEntry(number, description, UNSOLD);
         
         //Lot l = new Lot
+        Lot newLot = new Lot(sellerName,number,description,reservePrice);
+        logger.fine(startBanner("Added new lot with lot ID: " + number));
         //logger.fine(new Lot with lot id 123 was added)
         //seller registers lot
         //add to catalogue
