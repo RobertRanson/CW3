@@ -17,6 +17,14 @@ public class AuctionHouseImp implements AuctionHouse {
 	List <Seller> sellerlist = new ArrayList<Seller>();
 	List <Lot> lotlist = new ArrayList<Lot>();
 	
+	private double buyerPremium;
+	private double commission;
+	private String houseBankAccount;
+	private Money increment;
+	private String houseBankAuthCode;
+	private BankingService bankingService;
+	private MessagingService MessagingService;
+	
 	
 	
 
@@ -29,17 +37,24 @@ public class AuctionHouseImp implements AuctionHouse {
           + "MESSAGE IN: " + messageName + LS
           + "-------------------------------------------------------------";
     }
-   
+    //SETUP 
     public AuctionHouseImp(Parameters parameters) {
+        buyerPremium = parameters.buyerPremium;
+        commission = parameters.commission;
+        increment = parameters.increment;
+        houseBankAccount = parameters.houseBankAccount;
+        houseBankAuthCode = parameters.houseBankAuthCode;
+        MessagingService = parameters.messagingService;
+        bankingService = parameters.bankingService;
     	
     }
-
+    //REGISTER BUYER
     public Status registerBuyer(
             String name,
             String address,
             String bankAccount,
             String bankAuthCode) {
-        logger.fine(startBanner("registerBuyer " + name));
+        logger.fine(startBanner("Registering Buyer: " + name));
         Buyer newBuyer = new Buyer(name, address, bankAccount, bankAuthCode);
         for (Buyer item : buyerlist){
         	if (item.getName() == name) {
@@ -51,12 +66,12 @@ public class AuctionHouseImp implements AuctionHouse {
         return Status.OK();
         }
 
-
+  //REGISTER SELLER
     public Status registerSeller(
             String name,
             String address,
             String bankAccount) {
-        logger.fine(startBanner("registerSeller " + name));
+        logger.fine(startBanner("Registering Seller: " + name));
         Seller newSeller = new Seller(name, address, bankAccount);
         for (Seller item : sellerlist){
         	if (item.getName() == name) {
@@ -67,13 +82,13 @@ public class AuctionHouseImp implements AuctionHouse {
         sellerlist.add(newSeller);
         return Status.OK();      
     }
-
+    //ADD LOT
     public Status addLot(
             String sellerName,
             int number,
             String description,
             Money reservePrice) {
-        logger.fine(startBanner("addLot " + sellerName + " " + number));
+        logger.fine(startBanner("Seller: " + sellerName + " adding LOT ID: " + number));
         //Check if seller name is valid
         int sellerRegistered = 0;
         for (Seller item : sellerlist){
@@ -95,27 +110,65 @@ public class AuctionHouseImp implements AuctionHouse {
         lotlist.add(newlot);
         //logger
         logger.fine("Lot ID:"+number+" has been added");
-
-        //seller registers lot
-        //add to catalogue
-        //logger.fine(lot with lot id 123 was added to catalogue)
         return Status.OK();    
     }
-
+    
     public List<CatalogueEntry> viewCatalogue() {
-        logger.fine(startBanner("viewCatalog"));
-        
+        logger.fine(startBanner("Viewing Catalog"));       
         List<CatalogueEntry> catalogue = new ArrayList<CatalogueEntry>();
+        for (Lot item: lotlist) {
+        	int lotNumber = item.getNumber();
+        	String description = item.getDescription();
+        	LotStatus lotStatus = item.getLotStatus();
+        	CatalogueEntry catalogueEntry = new CatalogueEntry(lotNumber,description,lotStatus);
+        	catalogue.add(catalogueEntry);
+        	     	
+        }
         logger.fine("Catalogue: " + catalogue.toString());
         return catalogue;
     }
-
+    //NOTE INTEREST
     public Status noteInterest(
             String buyerName,
             int lotNumber) {
-        logger.fine(startBanner("noteInterest " + buyerName + " " + lotNumber));
+        logger.fine(startBanner("Buyer: " + buyerName + " is noting interest in LOT ID: " + lotNumber));
+        //check lot valid
+        int lotValid = 0;
+        for (Lot item : lotlist) {
+        	if (item.getNumber() == lotNumber){
+        		//if lot valid check not in auction
+        		if (item.getLotStatus()==LotStatus.UNSOLD) {
+        			lotValid = 1;
+        		}else {
+        			return Status.error("LOT ID: " +lotNumber+" is"+item.getLotStatus().toString());
+        		}
+        	}
+        }
+        if (lotValid == 0) {return Status.error("Lot ID not valid");}
+        //check if buyer registered
+        int buyerValid = 0;
+        for (Buyer item : buyerlist) {
+        	if (item.getName()==buyerName) {
+        		buyerValid = 1;
+        	}
+        }
+        if (buyerValid==0) {return Status.error("Buyer not registered");}
+        //get lot, get buyer, add buyer to lot noteInterest
+        for (Lot item : lotlist) {
+        	if (item.getNumber() == lotNumber){
+        		for (Buyer abuyer : buyerlist) {
+                	if (abuyer.getName()==buyerName) {
+                		item.noteInterest(abuyer);
+                		break;
+                	}
+        		}
+        		break;
+        	}
+        }
+        //logger
+        logger.fine("Buyer: "+buyerName+" Interested Lot ID: " +lotNumber);
+        return Status.OK();
         
-        return Status.OK();   
     }
 
     public Status openAuction(
@@ -123,6 +176,12 @@ public class AuctionHouseImp implements AuctionHouse {
             String auctioneerAddress,
             int lotNumber) {
         logger.fine(startBanner("openAuction " + auctioneerName + " " + lotNumber));
+        //validate Lot Number
+        
+        //send message to all interested parties
+        
+        //change lot status
+        
         
         return Status.OK();
     }

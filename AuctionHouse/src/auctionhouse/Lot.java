@@ -9,6 +9,7 @@ public class Lot {
 	String description;
 	Money reservePrice;
 	LotStatus lotStatus;
+	
 	List<Buyer> noteInterestList = new ArrayList<Buyer>();
 	
 	public Lot(String SellerName, int number, String description, Money reserverPrice) {
@@ -21,7 +22,7 @@ public class Lot {
 	}
 	//Note interest in lot
 	public void noteInterest(Buyer aBuyer) {
-		noteInterestList.add(aBuyer);
+		this.noteInterestList.add(aBuyer);
 	}
 
 	public void setLotStatus(LotStatus lotStatus) {
@@ -37,7 +38,7 @@ public class Lot {
 	}
 
 	public void setSellerName(String sellerName) {
-		SellerName = sellerName;
+		this.SellerName = sellerName;
 	}
 
 	public int getNumber() {
