@@ -12,6 +12,8 @@ public class Lot {
 	
 	List<Buyer> noteInterestList = new ArrayList<Buyer>();
 	
+	
+	
 	public Lot(String SellerName, int number, String description, Money reserverPrice) {
 		this.SellerName = SellerName;
 		this.number = number;
@@ -23,6 +25,9 @@ public class Lot {
 	//Note interest in lot
 	public void noteInterest(Buyer aBuyer) {
 		this.noteInterestList.add(aBuyer);
+	}
+	public List<Buyer> getNoteInterestList() {
+		return noteInterestList;
 	}
 
 	public void setLotStatus(LotStatus lotStatus) {

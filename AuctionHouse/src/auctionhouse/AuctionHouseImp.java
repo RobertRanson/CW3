@@ -23,7 +23,7 @@ public class AuctionHouseImp implements AuctionHouse {
 	private Money increment;
 	private String houseBankAuthCode;
 	private BankingService bankingService;
-	private MessagingService MessagingService;
+	private MessagingService messagingService;
 	
 	
 	
@@ -44,7 +44,7 @@ public class AuctionHouseImp implements AuctionHouse {
         increment = parameters.increment;
         houseBankAccount = parameters.houseBankAccount;
         houseBankAuthCode = parameters.houseBankAuthCode;
-        MessagingService = parameters.messagingService;
+        messagingService = parameters.messagingService;
         bankingService = parameters.bankingService;
     	
     }
@@ -175,13 +175,34 @@ public class AuctionHouseImp implements AuctionHouse {
             String auctioneerName,
             String auctioneerAddress,
             int lotNumber) {
-        logger.fine(startBanner("openAuction " + auctioneerName + " " + lotNumber));
+        logger.fine(startBanner("Auctioneer " + auctioneerName + " Opens LOT ID: " + lotNumber));
         //validate Lot Number
-        
-        //send message to all interested parties
-        
-        //change lot status
-        
+        int lotValid = 0;
+        Lot theLot = null;
+        for (Lot item : lotlist) {
+        	if (item.getNumber() == lotNumber){
+        		lotValid = 1;
+        		theLot = item;
+        	}
+        }
+        if (lotValid == 0) {return Status.error("Lot ID not valid");}
+        //if Lot status is not UNSOLD
+        if (theLot.getLotStatus()!= LotStatus.UNSOLD) {
+        	return Status.error("LOT ID: " +lotNumber+" is"+theLot.getLotStatus().toString());
+        }
+        //set LOT to IN_AUCTION
+        theLot.setLotStatus(LotStatus.IN_AUCTION);
+        //Send messages to all interested buyers
+        for (Buyer item : theLot.getNoteInterestList()) {
+        	messagingService.auctionOpened(item.getAddress(), lotNumber);  	
+        }
+        //Send message to seller
+        for (Seller seller :sellerlist) {
+        	if (seller.getName()==theLot.getSellerName()){
+        		messagingService.auctionOpened(seller.getAddress(), lotNumber);  	
+        	}
+        }
+    
         
         return Status.OK();
     }
