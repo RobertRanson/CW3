@@ -6,6 +6,8 @@ package auctionhouse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.Comparator;
+import java.util.Collections;
 
 /**
  * @author pbj
@@ -112,7 +114,7 @@ public class AuctionHouseImp implements AuctionHouse {
         logger.fine("Lot ID:"+number+" has been added");
         return Status.OK();    
     }
-    //VIEW CATALOGUE
+  //VIEW CATALOGUE
     public List<CatalogueEntry> viewCatalogue() {
         logger.fine(startBanner("Viewing Catalog"));       
         List<CatalogueEntry> catalogue = new ArrayList<CatalogueEntry>();
@@ -121,17 +123,17 @@ public class AuctionHouseImp implements AuctionHouse {
         	String description = item.getDescription();
         	LotStatus lotStatus = item.getLotStatus();
         	CatalogueEntry catalogueEntry = new CatalogueEntry(lotNumber,description,lotStatus);
-        	catalogue.add(catalogueEntry);
-        	     	
+        	catalogue.add(catalogueEntry);	     	
         }
-	Collections.sort(catalogue, new Comparator<CatalogueEntry>() {
+        //Sorting the catalogue based on lot numbers.
+        Collections.sort(catalogue, new Comparator<CatalogueEntry>() {
 			public int compare(CatalogueEntry o1, CatalogueEntry o2) {
 				return o1.lotNumber - o2.lotNumber;
-	    }
+			}
 	    });
         logger.fine("Catalogue: " + catalogue.toString());
         return catalogue;
-    }
+    }	
     //NOTE INTEREST
     public Status noteInterest(
             String buyerName,
@@ -213,7 +215,7 @@ public class AuctionHouseImp implements AuctionHouse {
         
         return Status.OK();
     }
-
+    //MAKE BID
     public Status makeBid(
             String buyerName,
             int lotNumber,
@@ -244,25 +246,33 @@ public class AuctionHouseImp implements AuctionHouse {
         	return Status.error("LOT ID: " +lotNumber+" is"+theLot.getLotStatus().toString());
         }
         //if there is no current bid
-        if (theLot.getCurrentBid() == null) {
+        Money zero = new Money("0");
+        if (theLot.getCurrentBid().equals(zero)) {
         	theLot.setCurrentBid(bid);
         	theLot.setCurrentBuyerName(buyerName);
 
-            logger.fine(startBanner("Bid Placed by: " + buyerName + " on LOT ID: " + lotNumber + " AMOUNT: " + bid));
+            logger.fine(startBanner("Bid0 Placed by: " + buyerName + " on LOT ID: " + lotNumber + " AMOUNT: " + bid));
 
         }else {
         	//if there is a current bid
-        	if (theLot.getCurrentBid().add(increment).lessEqual(bid) == true) {
-        		return Status.error("Your bid: " +bid.toString()+" is less than "+theLot.getCurrentBid().add(increment).toString());
-        	}else {
+        	logger.fine(startBanner("New Bid Placed by: " + buyerName + " on LOT ID: " + lotNumber + " AMOUNT: " + bid));
+        	if (theLot.getCurrentBid().add(increment).lessEqual(bid)) {
             	theLot.setCurrentBid(bid);
             	theLot.setCurrentBuyerName(buyerName);
-            	logger.fine(startBanner("Bid Placed by: " + buyerName + " on LOT ID: " + lotNumber + " AMOUNT: " + bid));
+            	logger.fine(startBanner("Bid1 Placed by: " + buyerName + " on LOT ID: " + lotNumber + " AMOUNT: " + bid));
+        	}else {
+        		return Status.error("Your bid: " +bid.toString()+" is less than "+theLot.getCurrentBid().add(increment).toString());
+
         	}
         	
         }
     	//sending messages
-    	messagingService.bidAccepted(theBuyer.getAddress(), lotNumber, bid);
+    	for (Buyer item : theLot.getNoteInterestList()) {
+    		if (item.getName()!=buyerName) {
+    		
+    			messagingService.bidAccepted(item.getAddress(), lotNumber, bid);
+    		}
+    	}
     	messagingService.bidAccepted(theLot.getAuctioneerAddress(), lotNumber, bid);
 
     	for (Seller item : sellerlist) {
@@ -271,7 +281,7 @@ public class AuctionHouseImp implements AuctionHouse {
     		}
     	}
     	
-    	
+    	logger.fine(startBanner("biddone"));
         return Status.OK();    
     }
 
