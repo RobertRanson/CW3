@@ -9,7 +9,15 @@ public class Lot {
 	String description;
 	Money reservePrice;
 	LotStatus lotStatus;
+	Money currentBid;
+	String currentBuyerName;
+	String auctioneerName;
+	String auctioneerAddress;
 	
+	
+
+
+
 	List<Buyer> noteInterestList = new ArrayList<Buyer>();
 	
 	
@@ -20,6 +28,9 @@ public class Lot {
 		this.description = description;
 		this.reservePrice = reserverPrice;
 		this.lotStatus = LotStatus.UNSOLD;
+		this.currentBid = null;
+		this.currentBuyerName = null;
+			
 		
 	}
 	//Note interest in lot
@@ -42,33 +53,45 @@ public class Lot {
 		return SellerName;
 	}
 
-	public void setSellerName(String sellerName) {
-		this.SellerName = sellerName;
-	}
 
+	public Money getCurrentBid() {
+		return currentBid;
+	}
+	public void setCurrentBid(Money currentBid) {
+		this.currentBid = currentBid;
+	}
+	public String getCurrentBuyerName() {
+		return currentBuyerName;
+	}
+	public void setCurrentBuyerName(String currentBuyerName) {
+		this.currentBuyerName = currentBuyerName;
+	}
+	public String getAuctioneerName() {
+		return auctioneerName;
+	}
+	public void setAuctioneerName(String auctioneerName) {
+		this.auctioneerName = auctioneerName;
+	}
+	public String getAuctioneerAddress() {
+		return auctioneerAddress;
+	}
+	public void setAuctioneerAddress(String auctioneerAddress) {
+		this.auctioneerAddress = auctioneerAddress;
+	}
 	public int getNumber() {
 		return number;
 	}
 
-	public void setNumber(int number) {
-		this.number = number;
-	}
 
 	public String getDescription() {
 		return description;
 	}
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
 
 	public Money getReservePrice() {
 		return reservePrice;
 	}
 
-	public void setReservePrice(Money reservePrice) {
-		this.reservePrice = reservePrice;
-	}
 	
 	
 

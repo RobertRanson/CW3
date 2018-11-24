@@ -112,7 +112,7 @@ public class AuctionHouseImp implements AuctionHouse {
         logger.fine("Lot ID:"+number+" has been added");
         return Status.OK();    
     }
-    
+    //VIEW CATALOGUE
     public List<CatalogueEntry> viewCatalogue() {
         logger.fine(startBanner("Viewing Catalog"));       
         List<CatalogueEntry> catalogue = new ArrayList<CatalogueEntry>();
@@ -170,7 +170,7 @@ public class AuctionHouseImp implements AuctionHouse {
         return Status.OK();
         
     }
-
+    //OPEN AUCTION
     public Status openAuction(
             String auctioneerName,
             String auctioneerAddress,
@@ -192,6 +192,8 @@ public class AuctionHouseImp implements AuctionHouse {
         }
         //set LOT to IN_AUCTION
         theLot.setLotStatus(LotStatus.IN_AUCTION);
+        theLot.setAuctioneerName(auctioneerName);
+        theLot.setAuctioneerAddress(auctioneerAddress);
         //Send messages to all interested buyers
         for (Buyer item : theLot.getNoteInterestList()) {
         	messagingService.auctionOpened(item.getAddress(), lotNumber);  	
@@ -212,7 +214,59 @@ public class AuctionHouseImp implements AuctionHouse {
             int lotNumber,
             Money bid) {
         logger.fine(startBanner("makeBid " + buyerName + " " + lotNumber + " " + bid));
+        //validate Lot Number
+        int lotValid = 0;
+        Lot theLot = null;
+        for (Lot item : lotlist) {
+        	if (item.getNumber() == lotNumber){
+        		lotValid = 1;
+        		theLot = item;
+        	}
+        }
+        if (lotValid == 0) {return Status.error("Lot ID not valid");}
+      //check if buyer registered
+        int buyerValid = 0;
+        Buyer theBuyer = null;
+        for (Buyer item : buyerlist) {
+        	if (item.getName()==buyerName) {
+        		theBuyer = item;
+        		buyerValid = 1;
+        	}
+        }
+        if (buyerValid==0) {return Status.error("Buyer not registered");}
+        //check if lot in auction
+        if (theLot.getLotStatus()!= LotStatus.IN_AUCTION) {
+        	return Status.error("LOT ID: " +lotNumber+" is"+theLot.getLotStatus().toString());
+        }
+        //if there is no current bid
+        if (theLot.getCurrentBid() == null) {
+        	theLot.setCurrentBid(bid);
+        	theLot.setCurrentBuyerName(buyerName);
 
+            logger.fine(startBanner("Bid Placed by: " + buyerName + " on LOT ID: " + lotNumber + " AMOUNT: " + bid));
+
+        }else {
+        	//if there is a current bid
+        	if (theLot.getCurrentBid().add(increment).lessEqual(bid) == true) {
+        		return Status.error("Your bid: " +bid.toString()+" is less than "+theLot.getCurrentBid().add(increment).toString());
+        	}else {
+            	theLot.setCurrentBid(bid);
+            	theLot.setCurrentBuyerName(buyerName);
+            	logger.fine(startBanner("Bid Placed by: " + buyerName + " on LOT ID: " + lotNumber + " AMOUNT: " + bid));
+        	}
+        	
+        }
+    	//sending messages
+    	messagingService.bidAccepted(theBuyer.getAddress(), lotNumber, bid);
+    	messagingService.bidAccepted(theLot.getAuctioneerAddress(), lotNumber, bid);
+
+    	for (Seller item : sellerlist) {
+    		if (item.getName()==theLot.getSellerName()) {
+    			messagingService.bidAccepted(item.getAddress(), lotNumber, bid);
+    		}
+    	}
+    	
+    	
         return Status.OK();    
     }
 
