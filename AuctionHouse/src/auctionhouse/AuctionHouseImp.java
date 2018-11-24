@@ -124,6 +124,11 @@ public class AuctionHouseImp implements AuctionHouse {
         	catalogue.add(catalogueEntry);
         	     	
         }
+	Collections.sort(catalogue, new Comparator<CatalogueEntry>() {
+			public int compare(CatalogueEntry o1, CatalogueEntry o2) {
+				return o1.lotNumber - o2.lotNumber;
+	    }
+	    });
         logger.fine("Catalogue: " + catalogue.toString());
         return catalogue;
     }
