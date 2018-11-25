@@ -6,6 +6,9 @@ package auctionhouse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+
+import auctionhouse.Status.Kind;
+
 import java.util.Comparator;
 import java.util.Collections;
 
@@ -20,7 +23,7 @@ public class AuctionHouseImp implements AuctionHouse {
 	List <Lot> lotlist = new ArrayList<Lot>();
 	
 	private double buyerPremium;
-	private double commission;
+	public double commission;
 	private String houseBankAccount;
 	private Money increment;
 	private String houseBankAuthCode;
@@ -236,10 +239,10 @@ public class AuctionHouseImp implements AuctionHouse {
         if (lotValid == 0) {return Status.error("Lot ID not valid");}
       //check if buyer registered
         int buyerValid = 0;
-        Buyer theBuyer = null;
+        //Buyer theBuyer = null;
         for (Buyer item : buyerlist) {
         	if (item.getName()==buyerName) {
-        		theBuyer = item;
+        		//theBuyer = item;
         		buyerValid = 1;
         	}
         }
@@ -308,9 +311,51 @@ public class AuctionHouseImp implements AuctionHouse {
         }
         //check if the same auctioneer.
         if (auctioneerName != theLot.getAuctioneerName()) {
-        	return Status.error("");
+        	return Status.error(theLot.getAuctioneerName()+" must close the auction. Not " +auctioneerName);
         }
-        
-        return Status.OK();  
+        //check if bid met reserve price
+        if ((theLot.getCurrentBid().compareTo(theLot.reservePrice))<0) {
+        	return new Status(Kind.NO_SALE);
+        }
+        //Transfer the money
+        Buyer theBuyer = null;
+        for (Buyer item : buyerlist) {
+        	if (item.getName()==theLot.getCurrentBuyerName()){
+        		theBuyer = item;
+        	}
+        }
+        //calculate buyers premium and charge buyer.
+        Money buyerPrice = theLot.currentBid.addPercent(buyerPremium);
+        if (bankingService.transfer(theBuyer.getBankAccount(), theBuyer.getBankAuthCode(), houseBankAccount, buyerPrice)
+        		== new Status(Kind.ERROR)) {
+        	//if the transfer returns error.we return no sale.
+        	return new Status(Kind.NO_SALE);
+        }
+        //get the seller object
+        Seller theSeller = null;
+        for (Seller item : sellerlist) {
+        	if (item.getName() == theLot.getSellerName()) {
+        		theSeller = item;
+        	}
+        }
+        // calculate commission and pay seller
+        //due to method in money.java being private had to convert commission from double to string to double
+        // to money to subtract from the current bid.
+        Money sellerPay = theLot.currentBid.subtract(new Money(Double.toString(commission)));
+        if (bankingService.transfer(houseBankAccount, houseBankAuthCode, theSeller.getBankAccount(), sellerPay) 
+        		== new Status(Kind.ERROR)) {
+        	return new Status(Kind.NO_SALE);
+        }
+        //Send messages
+        messagingService.lotSold(theSeller.getAddress(), lotNumber);
+        messagingService.lotSold(theBuyer.getAddress(), lotNumber);
+        //send messages to all interested buyers
+        for (Buyer item : theLot.getNoteInterestList()) {
+    		if (item.getName()!=theBuyer.getName()) {
+    			messagingService.lotSold(item.getAddress(), lotNumber);
+    		}
+    	}
+        logger.finest("LOT ID:" + lotNumber+ " has been SOLD" );
+        return new Status(Kind.SALE);  
     }
 }
