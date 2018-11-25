@@ -186,6 +186,13 @@ public class AuctionHouseTest {
         runStory(2);
     }
     
+    @Test 
+    public void testDuplicateLotNumbers() {
+    	logger.info(makeBanner("testDuplicateLotNumbers"));
+    	runStory(2);
+    	assertError(house.addLot("SellerY", 2, "Book", new Money("20.00")));
+    }
+    
     @Test
     public void testViewCatalogue() {
         logger.info(makeBanner("testViewCatalogue"));
@@ -206,23 +213,72 @@ public class AuctionHouseTest {
         logger.info(makeBanner("testRegisterBuyer"));
         runStory(3);       
     }
+    
+    @Test 
+    public void testRegisterBuyerDuplicateNames() {
+    	logger.info(makeBanner("testRegisterBuyerDuplicateNames"));
+        runStory(3);  
+        assertError(house.registerBuyer("BuyerA", "@BuyerD", "BA A/C", "BA-auth"));
+    }
 
     @Test
     public void testNoteInterest() {
         logger.info(makeBanner("testNoteInterest"));
         runStory(4);
+        
+        assertError(house.noteInterest("BuyerX", 1));
+        assertError(house.noteInterest("BuyerA", 10));
+        assertError(house.noteInterest("BuyerA", 1));
+        
+        house.addLot("SellerY", 3, "Bag", new Money("20.00"));
+        assertOK(house.noteInterest("BuyerA", 3));
     }
       
     @Test
     public void testOpenAuction() {
         logger.info(makeBanner("testOpenAuction"));
-        runStory(5);       
+        runStory(5);
+        
+        assertError(house.openAuction("Auctioneer1", "@Auctioneer1", 10));
+        
+        house.addLot("SellerY", 3, "Bag", new Money("20.00"));
+        assertOK(house.openAuction("Auctioneer1", "@Auctioneer1", 3)); 
+        
+        Lot newLot = new Lot("SellerY", 7, "Apple", new Money("1200.00"));
+        newLot.setLotStatus(LotStatus.SOLD);
+        assertError(house.openAuction("Auctioneer1", "@Auctioneer1", 7));
+        
+        newLot.setLotStatus(LotStatus.IN_AUCTION);
+        assertError(house.openAuction("Auctioneer1", "@Auctioneer1", 7));
+        
+        newLot.setLotStatus(LotStatus.SOLD_PENDING_PAYMENT);
+        assertError(house.openAuction("Auctioneer1", "@Auctioneer1", 7));
     }
       
     @Test
     public void testMakeBid() {
         logger.info(makeBanner("testMakeBid"));
         runStory(7);
+        
+        Money m100 = new Money("100.00");
+        assertError(house.makeBid("BuyerB", 10, m100));
+        assertError(house.makeBid("BuyerX", 1, m100));
+        
+        Lot newLot = new Lot("SellerY", 7, "Apple", new Money("1200.00"));
+        newLot.setLotStatus(LotStatus.UNSOLD);
+        assertError(house.makeBid("BuyerA", 7, m100));
+        
+        newLot.setLotStatus(LotStatus.SOLD);
+        assertError(house.makeBid("BuyerA", 7, m100));
+        
+        newLot.setLotStatus(LotStatus.SOLD_PENDING_PAYMENT);
+        assertError(house.makeBid("BuyerA", 7, m100));
+        
+        Money m10 = new Money("10.00");
+        newLot.setCurrentBid(m100);
+        assertError(house.makeBid("BuyerA", 7, m10));
+        
+        
     }
   
     @Test
