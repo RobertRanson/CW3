@@ -147,11 +147,14 @@ public class AuctionHouseImp implements AuctionHouse {
         		if (item.getLotStatus()==LotStatus.UNSOLD) {
         			lotValid = 1;
         		}else {
+        			logger.fine("LOT ID: " +lotNumber+" is"+item.getLotStatus().toString());
         			return Status.error("LOT ID: " +lotNumber+" is"+item.getLotStatus().toString());
         		}
         	}
         }
-        if (lotValid == 0) {return Status.error("Lot ID not valid");}
+        if (lotValid == 0) {
+        	logger.fine("Lot ID "+lotNumber+ " not valid");
+        	return Status.error("Lot ID not valid");}
         //check if buyer registered
         int buyerValid = 0;
         for (Buyer item : buyerlist) {
@@ -284,12 +287,30 @@ public class AuctionHouseImp implements AuctionHouse {
     	logger.fine(startBanner("biddone"));
         return Status.OK();    
     }
-
+    //CLOSE AUCTION
     public Status closeAuction(
             String auctioneerName,
             int lotNumber) {
         logger.fine(startBanner("closeAuction " + auctioneerName + " " + lotNumber));
- 
+        //Check Lot is valid
+        int lotValid = 0;
+        Lot theLot = null;
+        for (Lot item : lotlist) {
+        	if (item.getNumber() == lotNumber){
+        		lotValid = 1;
+        		theLot = item;
+        	}
+        }
+        if (lotValid == 0) {return Status.error("Lot ID not valid");}
+        //check if lot is in auction
+        if (theLot.getLotStatus()!=LotStatus.IN_AUCTION) {
+        	return Status.error("LOT ID: " +lotNumber+" is"+theLot.getLotStatus().toString());
+        }
+        //check if the same auctioneer.
+        if (auctioneerName != theLot.getAuctioneerName()) {
+        	return Status.error("");
+        }
+        
         return Status.OK();  
     }
 }
