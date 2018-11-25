@@ -171,7 +171,16 @@ public class AuctionHouseImp implements AuctionHouse {
         	if (item.getNumber() == lotNumber){
         		for (Buyer abuyer : buyerlist) {
                 	if (abuyer.getName()==buyerName) {
-                		item.noteInterest(abuyer);
+                		for (Buyer x :item.getNoteInterestList()) {
+                			//check if buyer had already noted interest s
+                			if (x.getName()== buyerName) {
+                				logger.fine("Buyer: "+ buyerName+ " Has already noted interst in this Lot");
+                				return Status.error("Buyer: "+ buyerName+ " Has already noted interst in this Lot");
+                			}else {
+                				item.noteInterest(abuyer);
+                			}
+                		}
+                		
                 		break;
                 	}
         		}
@@ -287,7 +296,7 @@ public class AuctionHouseImp implements AuctionHouse {
     		}
     	}
     	
-    	logger.fine(startBanner("biddone"));
+    	logger.fine(startBanner("bid done"));
         return Status.OK();    
     }
     //CLOSE AUCTION
@@ -324,8 +333,12 @@ public class AuctionHouseImp implements AuctionHouse {
         		theBuyer = item;
         	}
         }
-        //calculate buyers premium and charge buyer.
+        //Calculating the money required for the transfer
+        //due to method in money.java being private had to convert commission from double to string to double
+        // to money to subtract from the current bid.
         Money buyerPrice = theLot.currentBid.addPercent(buyerPremium);
+        Money sellerPay = theLot.currentBid.subtract(new Money(Double.toString(commission)));
+        //calculate buyers premium and charge buyer.
         if (bankingService.transfer(theBuyer.getBankAccount(), theBuyer.getBankAuthCode(), houseBankAccount, buyerPrice)
         		== new Status(Kind.ERROR)) {
         	//if the transfer returns error.we return no sale.
@@ -339,9 +352,7 @@ public class AuctionHouseImp implements AuctionHouse {
         	}
         }
         // calculate commission and pay seller
-        //due to method in money.java being private had to convert commission from double to string to double
-        // to money to subtract from the current bid.
-        Money sellerPay = theLot.currentBid.subtract(new Money(Double.toString(commission)));
+        
         if (bankingService.transfer(houseBankAccount, houseBankAuthCode, theSeller.getBankAccount(), sellerPay) 
         		== new Status(Kind.ERROR)) {
         	return new Status(Kind.NO_SALE);
