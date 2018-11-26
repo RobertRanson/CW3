@@ -334,10 +334,24 @@ public class AuctionHouseImp implements AuctionHouse {
         if (auctioneerName != theLot.getAuctioneerName()) {
         	return Status.error(theLot.getAuctioneerName()+" must close the auction. Not " +auctioneerName);
         }
+        //get the seller object
+        Seller theSeller = null;
+        for (Seller item : sellerlist) {
+        	if (item.getName() == theLot.getSellerName()) {
+        		theSeller = item;
+        	}
+        }
         //check if bid met reserve price
         if ((theLot.getCurrentBid().compareTo(theLot.reservePrice))<0) {
         	//set lot to unsold
         	theLot.setLotStatus(LotStatus.UNSOLD);
+        	//send messages notifing lot unsold
+        	messagingService.lotUnsold(theSeller.getAddress(), lotNumber);
+        	//send messages to all interested buyers
+            for (Buyer item : theLot.getNoteInterestList()) {
+        		messagingService.lotSold(item.getAddress(), lotNumber);
+        	}
+        	
         	return new Status(Kind.NO_SALE);
         }
         //Transfer the money
@@ -355,13 +369,7 @@ public class AuctionHouseImp implements AuctionHouse {
         	theLot.setLotStatus(LotStatus.SOLD_PENDING_PAYMENT);
         	return new Status(Kind.SALE_PENDING_PAYMENT);
         }
-        //get the seller object
-        Seller theSeller = null;
-        for (Seller item : sellerlist) {
-        	if (item.getName() == theLot.getSellerName()) {
-        		theSeller = item;
-        	}
-        }
+
         // calculate commission and pay seller
         //due to method in money.java being private had to convert commission from double to string to double
         // to money to subtract from the current bid.
