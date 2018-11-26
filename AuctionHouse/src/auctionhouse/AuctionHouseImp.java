@@ -6,7 +6,7 @@ package auctionhouse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-
+import java.util.TreeMap;
 import auctionhouse.Status.Kind;
 
 import java.util.Comparator;
@@ -21,6 +21,7 @@ public class AuctionHouseImp implements AuctionHouse {
 	List<Buyer> buyerlist = new ArrayList<Buyer>();
 	List <Seller> sellerlist = new ArrayList<Seller>();
 	List <Lot> lotlist = new ArrayList<Lot>();
+	TreeMap<Integer, Lot> lotList = new TreeMap<Integer, Lot>();
 	
 	private double buyerPremium;
 	public double commission;
@@ -112,7 +113,22 @@ public class AuctionHouseImp implements AuctionHouse {
         //new Lot
         Lot newlot = new Lot(sellerName,number,description,reservePrice);
         //add to lot list
-        lotlist.add(newlot);
+        boolean lotadded = false;
+        if (lotlist.size() == 0) {
+        	lotlist.add(newlot);
+        	lotadded = true;
+        }
+        else {
+        	for (int i = 0; i < lotlist.size(); i++) {
+        		if(lotlist.get(i).getNumber() > number) {
+        			lotlist.add(i, newlot);
+        			lotadded = true;
+        			break;
+        		}
+        	}
+        }
+        if (lotadded == false) {lotlist.add(newlot);};
+//        lotlist.add(newlot);
         //logger
         logger.fine("Lot ID:"+number+" has been added");
         return Status.OK();    
@@ -129,11 +145,11 @@ public class AuctionHouseImp implements AuctionHouse {
         	catalogue.add(catalogueEntry);	     	
         }
         //Sorting the catalogue based on lot numbers.
-        Collections.sort(catalogue, new Comparator<CatalogueEntry>() {
-			public int compare(CatalogueEntry o1, CatalogueEntry o2) {
-				return o1.lotNumber - o2.lotNumber;
-			}
-	    });
+//        Collections.sort(catalogue, new Comparator<CatalogueEntry>() {
+//			public int compare(CatalogueEntry o1, CatalogueEntry o2) {
+//				return o1.lotNumber - o2.lotNumber;
+//			}
+//	    });
         logger.fine("Catalogue: " + catalogue.toString());
         return catalogue;
     }	
@@ -144,11 +160,13 @@ public class AuctionHouseImp implements AuctionHouse {
         logger.fine(startBanner("Buyer: " + buyerName + " is noting interest in LOT ID: " + lotNumber));
         //check lot valid
         int lotValid = 0;
+        Lot theLot = null;
         for (Lot item : lotlist) {
         	if (item.getNumber() == lotNumber){
         		//if lot valid check not in auction
         		if (item.getLotStatus()==LotStatus.UNSOLD) {
         			lotValid = 1;
+        			theLot = item;
         		}else {
         			logger.fine("LOT ID: " +lotNumber+" is"+item.getLotStatus().toString());
         			return Status.error("LOT ID: " +lotNumber+" is"+item.getLotStatus().toString());
@@ -160,27 +178,25 @@ public class AuctionHouseImp implements AuctionHouse {
         	return Status.error("Lot ID not valid");}
         //check if buyer registered
         int buyerValid = 0;
+        Buyer theBuyer = null;
         for (Buyer item : buyerlist) {
         	if (item.getName()==buyerName) {
         		buyerValid = 1;
+        		theBuyer = item;
         	}
         }
         if (buyerValid==0) {return Status.error("Buyer not registered");}
+        //if a buyer note interest twice
+        if (theLot.noteInterestList.contains(theBuyer)) {
+        	logger.fine("Buyer: " + theBuyer.getName() + "is already note interest!");
+			return Status.error("Buyer: " + theBuyer.getName() + "is already note interest!");
+        }
         //get lot, get buyer, add buyer to lot noteInterest
         for (Lot item : lotlist) {
         	if (item.getNumber() == lotNumber){
         		for (Buyer abuyer : buyerlist) {
                 	if (abuyer.getName()==buyerName) {
-                		for (Buyer x :item.getNoteInterestList()) {
-                			//check if buyer had already noted interest s
-                			if (x.getName()== buyerName) {
-                				logger.fine("Buyer: "+ buyerName+ " Has already noted interst in this Lot");
-                				return Status.error("Buyer: "+ buyerName+ " Has already noted interst in this Lot");
-                			}else {
-                				item.noteInterest(abuyer);
-                			}
-                		}
-                		
+                		item.noteInterest(abuyer);
                 		break;
                 	}
         		}
@@ -296,7 +312,7 @@ public class AuctionHouseImp implements AuctionHouse {
     		}
     	}
     	
-    	logger.fine(startBanner("bid done"));
+    	logger.fine(startBanner("biddone"));
         return Status.OK();    
     }
     //CLOSE AUCTION
@@ -333,12 +349,8 @@ public class AuctionHouseImp implements AuctionHouse {
         		theBuyer = item;
         	}
         }
-        //Calculating the money required for the transfer
-        //due to method in money.java being private had to convert commission from double to string to double
-        // to money to subtract from the current bid.
-        Money buyerPrice = theLot.currentBid.addPercent(buyerPremium);
-        Money sellerPay = theLot.currentBid.subtract(new Money(Double.toString(commission)));
         //calculate buyers premium and charge buyer.
+        Money buyerPrice = theLot.currentBid.addPercent(buyerPremium);
         if (bankingService.transfer(theBuyer.getBankAccount(), theBuyer.getBankAuthCode(), houseBankAccount, buyerPrice)
         		== new Status(Kind.ERROR)) {
         	//if the transfer returns error.we return no sale.
@@ -352,7 +364,9 @@ public class AuctionHouseImp implements AuctionHouse {
         	}
         }
         // calculate commission and pay seller
-        
+        //due to method in money.java being private had to convert commission from double to string to double
+        // to money to subtract from the current bid.
+        Money sellerPay = theLot.currentBid.subtract(new Money(Double.toString(commission)));
         if (bankingService.transfer(houseBankAccount, houseBankAuthCode, theSeller.getBankAccount(), sellerPay) 
         		== new Status(Kind.ERROR)) {
         	return new Status(Kind.NO_SALE);

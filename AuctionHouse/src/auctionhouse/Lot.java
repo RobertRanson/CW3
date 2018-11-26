@@ -15,9 +15,6 @@ public class Lot {
 	String auctioneerAddress;
 	
 	
-
-
-
 	List<Buyer> noteInterestList = new ArrayList<Buyer>();
 	
 	
@@ -28,7 +25,7 @@ public class Lot {
 		this.description = description;
 		this.reservePrice = reserverPrice;
 		this.lotStatus = LotStatus.UNSOLD;
-		this.currentBid = null;
+		this.currentBid = new Money("0.00");
 		this.currentBuyerName = null;
 			
 		
