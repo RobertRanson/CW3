@@ -336,6 +336,8 @@ public class AuctionHouseImp implements AuctionHouse {
         }
         //check if bid met reserve price
         if ((theLot.getCurrentBid().compareTo(theLot.reservePrice))<0) {
+        	//set lot to unsold
+        	theLot.setLotStatus(LotStatus.UNSOLD);
         	return new Status(Kind.NO_SALE);
         }
         //Transfer the money
