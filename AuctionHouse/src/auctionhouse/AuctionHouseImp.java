@@ -366,7 +366,7 @@ public class AuctionHouseImp implements AuctionHouse {
         Money sellerPay = theLot.currentBid.subtract(new Money(Double.toString(commission)));
         if (bankingService.transfer(houseBankAccount, houseBankAuthCode, theSeller.getBankAccount(), sellerPay) 
         		== new Status(Kind.ERROR)) {
-        	return new Status(Kind.NO_SALE);
+        	return new Status(Kind.SALE_PENDING_PAYMENT);
         }
         //Send messages
         messagingService.lotSold(theSeller.getAddress(), lotNumber);
