@@ -30,7 +30,7 @@ public class MoneyTest {
      */
     @Test
     public void testSubtract() {
-    	Money val1 = new Money("13.66");
+        Money val1 = new Money("13.66");
         Money val2 = new Money("0.66");
         Money result = val1.subtract(val2);
         assertEquals("13.00", result.toString());
@@ -38,7 +38,7 @@ public class MoneyTest {
     
     @Test
     public void testAddPercent() {
-    	Money val1 = new Money("10.00");
+        Money val1 = new Money("10.00");
         double percent = 50.0;
         Money result = val1.addPercent(percent);
         assertEquals("15.00",result.toString());
@@ -51,7 +51,7 @@ public class MoneyTest {
         Money val3 = new Money("7.88");        
         assertEquals(-1, val1.compareTo(val2));
         assertEquals(1, val2.compareTo(val3));
-        assertEquals(0, val1.compareTo(val3));   	
+        assertEquals(0, val1.compareTo(val3));       
     }
     
     @Test 
@@ -65,12 +65,12 @@ public class MoneyTest {
         assertTrue(result1);
         assertTrue(result2);
         assertFalse(result3);
-    	
+        
     }
     
     @Test
     public void testEqual() {
-    	Money val1 = new Money("9.99");
+        Money val1 = new Money("9.99");
         Money val2 = new Money("9.99");
         Money val3 = new Money("10.0");
         boolean result = val1.equals(val2);
