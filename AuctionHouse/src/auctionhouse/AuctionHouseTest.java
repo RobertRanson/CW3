@@ -188,9 +188,9 @@ public class AuctionHouseTest {
     
     @Test 
     public void testDuplicateLotNumbers() {
-    	logger.info(makeBanner("testDuplicateLotNumbers"));
-    	runStory(2);
-    	assertError(house.addLot("SellerY", 2, "Book", new Money("20.00")));
+        logger.info(makeBanner("testDuplicateLotNumbers"));
+        runStory(2);
+        assertError(house.addLot("SellerY", 2, "Book", new Money("20.00")));
     }
     
     @Test
@@ -216,7 +216,7 @@ public class AuctionHouseTest {
     
     @Test 
     public void testRegisterBuyerDuplicateNames() {
-    	logger.info(makeBanner("testRegisterBuyerDuplicateNames"));
+        logger.info(makeBanner("testRegisterBuyerDuplicateNames"));
         runStory(3);  
         assertError(house.registerBuyer("BuyerA", "@BuyerD", "BA A/C", "BA-auth"));
     }
@@ -297,6 +297,7 @@ public class AuctionHouseTest {
         house.makeBid("BuyerA", 5, m10);
         //test if bid is lower than reserve price
         assertError(house.closeAuction("Auctioneer1",  5));
+        messagingService.expectLotUnsold("@BuyerA", 5);
         
         bankingService.setBadAccount("BadAccount1");
         //test if it is a bad account
