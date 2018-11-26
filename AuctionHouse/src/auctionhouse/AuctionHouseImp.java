@@ -349,7 +349,7 @@ public class AuctionHouseImp implements AuctionHouse {
             messagingService.lotUnsold(theSeller.getAddress(), lotNumber);
             //send messages to all interested buyers
             for (Buyer item : theLot.getNoteInterestList()) {
-                messagingService.lotSold(item.getAddress(), lotNumber);
+                messagingService.lotUnsold(item.getAddress(), lotNumber);
             }
             
 
@@ -377,6 +377,7 @@ public class AuctionHouseImp implements AuctionHouse {
         Money sellerPay = theLot.currentBid.subtract(new Money(Double.toString(commission)));
         if (bankingService.transfer(houseBankAccount, houseBankAuthCode, theSeller.getBankAccount(), sellerPay) 
                 == new Status(Kind.ERROR)) {
+            theLot.setLotStatus(LotStatus.SOLD_PENDING_PAYMENT);
             return new Status(Kind.SALE_PENDING_PAYMENT);
         }
         //Send messages
