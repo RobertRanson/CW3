@@ -285,6 +285,9 @@ public class AuctionHouseTest {
     public void testCloseAuctionWithSale() {
         logger.info(makeBanner("testCloseAuctionWithSale"));
         runStory(8);
+        
+        //close auction twice
+        assertError(house.closeAuction("Auctioneer1",  1));
         //test if lot number is wrong
         assertError(house.closeAuction("Auctioneer1",  10));
         //test if auctioneer name is wrong
@@ -296,12 +299,9 @@ public class AuctionHouseTest {
         assertError(house.closeAuction("Auctioneer1",  5));
         
         bankingService.setBadAccount("BadAccount1");
-        
         //test if it is a bad account
         assertError(bankingService.transfer("BadAccount1", "BB-auth",  "AH A/C", new Money("110.00")));
-        
-        
-
+                
     }
      
     

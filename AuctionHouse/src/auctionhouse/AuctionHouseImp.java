@@ -6,11 +6,8 @@ package auctionhouse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.TreeMap;
 import auctionhouse.Status.Kind;
 
-import java.util.Comparator;
-import java.util.Collections;
 
 /**
  * @author pbj
@@ -21,7 +18,6 @@ public class AuctionHouseImp implements AuctionHouse {
 	List<Buyer> buyerlist = new ArrayList<Buyer>();
 	List <Seller> sellerlist = new ArrayList<Seller>();
 	List <Lot> lotlist = new ArrayList<Lot>();
-	TreeMap<Integer, Lot> lotList = new TreeMap<Integer, Lot>();
 	
 	private double buyerPremium;
 	public double commission;
@@ -354,7 +350,8 @@ public class AuctionHouseImp implements AuctionHouse {
         if (bankingService.transfer(theBuyer.getBankAccount(), theBuyer.getBankAuthCode(), houseBankAccount, buyerPrice)
         		== new Status(Kind.ERROR)) {
         	//if the transfer returns error.we return no sale.
-        	return new Status(Kind.NO_SALE);
+        	theLot.setLotStatus(LotStatus.SOLD_PENDING_PAYMENT);
+        	return new Status(Kind.SALE_PENDING_PAYMENT);
         }
         //get the seller object
         Seller theSeller = null;
@@ -380,6 +377,7 @@ public class AuctionHouseImp implements AuctionHouse {
     			messagingService.lotSold(item.getAddress(), lotNumber);
     		}
     	}
+        theLot.setLotStatus(LotStatus.SOLD);
         logger.finest("LOT ID:" + lotNumber+ " has been SOLD" );
         return new Status(Kind.SALE);  
     }
