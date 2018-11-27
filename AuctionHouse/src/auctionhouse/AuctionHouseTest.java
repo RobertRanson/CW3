@@ -177,6 +177,7 @@ public class AuctionHouseTest {
     public void testRegisterSellerDuplicateNames() {
         logger.info(makeBanner("testRegisterSellerDuplicateNames"));
         runStory(1);     
+        //test if seller register twice
         assertError(house.registerSeller("SellerY", "@SellerZ", "SZ A/C"));       
     }
 
@@ -184,12 +185,15 @@ public class AuctionHouseTest {
     public void testAddLot() {
         logger.info(makeBanner("testAddLot"));
         runStory(2);
+        //test if seller is not register
+        assertError(house.addLot("SellerH", 9, "Chair", new Money("50.00")));
     }
     
     @Test 
     public void testDuplicateLotNumbers() {
         logger.info(makeBanner("testDuplicateLotNumbers"));
         runStory(2);
+        //test if lot number is already exists
         assertError(house.addLot("SellerY", 2, "Book", new Money("20.00")));
     }
     
@@ -218,6 +222,7 @@ public class AuctionHouseTest {
     public void testRegisterBuyerDuplicateNames() {
         logger.info(makeBanner("testRegisterBuyerDuplicateNames"));
         runStory(3);  
+        //test if buyer register twice
         assertError(house.registerBuyer("BuyerA", "@BuyerD", "BA A/C", "BA-auth"));
     }
 
@@ -225,9 +230,11 @@ public class AuctionHouseTest {
     public void testNoteInterest() {
         logger.info(makeBanner("testNoteInterest"));
         runStory(4);
-        
+        //test if buyer is not register
         assertError(house.noteInterest("BuyerX", 1));
+        //test if lot is not added 
         assertError(house.noteInterest("BuyerA", 10));
+        //test if a buyer interest same lot twice
         assertError(house.noteInterest("BuyerA", 1));
         
         house.addLot("SellerY", 3, "Bag", new Money("20.00"));
@@ -238,19 +245,20 @@ public class AuctionHouseTest {
     public void testOpenAuction() {
         logger.info(makeBanner("testOpenAuction"));
         runStory(5);
-        
+        //test open aution again
         assertError(house.openAuction("Auctioneer1", "@Auctioneer1", 10));
         
         house.addLot("SellerY", 3, "Bag", new Money("20.00"));
         assertOK(house.openAuction("Auctioneer1", "@Auctioneer1", 3)); 
         
         Lot newLot = new Lot("SellerY", 7, "Apple", new Money("1200.00"));
+        //test if lot status is not UNSOLD
         newLot.setLotStatus(LotStatus.SOLD);
         assertError(house.openAuction("Auctioneer1", "@Auctioneer1", 7));
-        
+        //same as above
         newLot.setLotStatus(LotStatus.IN_AUCTION);
         assertError(house.openAuction("Auctioneer1", "@Auctioneer1", 7));
-        
+        //same as above
         newLot.setLotStatus(LotStatus.SOLD_PENDING_PAYMENT);
         assertError(house.openAuction("Auctioneer1", "@Auctioneer1", 7));
     }
@@ -261,21 +269,25 @@ public class AuctionHouseTest {
         runStory(7);
         
         Money m100 = new Money("100.00");
+        //test if lot number is not valid (means no such lot was added)
         assertError(house.makeBid("BuyerB", 10, m100));
+        //test if buyer is not register
         assertError(house.makeBid("BuyerX", 1, m100));
         
         Lot newLot = new Lot("SellerY", 7, "Apple", new Money("1200.00"));
+        //test if lot status is not IN_AUCTION
         newLot.setLotStatus(LotStatus.UNSOLD);
         assertError(house.makeBid("BuyerA", 7, m100));
-        
+        //same as above
         newLot.setLotStatus(LotStatus.SOLD);
         assertError(house.makeBid("BuyerA", 7, m100));
-        
+        //same as above
         newLot.setLotStatus(LotStatus.SOLD_PENDING_PAYMENT);
         assertError(house.makeBid("BuyerA", 7, m100));
         
         Money m10 = new Money("10.00");
         newLot.setCurrentBid(m100);
+        //test if bid is lower than current price
         assertError(house.makeBid("BuyerA", 7, m10));
         
         
@@ -286,7 +298,7 @@ public class AuctionHouseTest {
         logger.info(makeBanner("testCloseAuctionWithSale"));
         runStory(8);
         
-        //close auction twice
+        //test close auction twice
         assertError(house.closeAuction("Auctioneer1",  1));
         //test if lot number is wrong
         assertError(house.closeAuction("Auctioneer1",  10));
