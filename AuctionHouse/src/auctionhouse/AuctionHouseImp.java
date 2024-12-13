@@ -1,12 +1,10 @@
 /**
-
- * Yucheng was here
- * test
- * Robbie was here :)
+ * 
  */
 package auctionhouse;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -15,6 +13,9 @@ import java.util.logging.Logger;
  *
  */
 public class AuctionHouseImp implements AuctionHouse {
+	
+	private HashMap<String, Buyer> buyerlist = new HashMap<>();
+	private HashMap<String, Seller> sellerlist = new HashMap<>();
 
     private static Logger logger = Logger.getLogger("auctionhouse");
     private static final String LS = System.lineSeparator();
@@ -37,7 +38,17 @@ public class AuctionHouseImp implements AuctionHouse {
             String bankAuthCode) {
         logger.fine(startBanner("registerBuyer " + name));
         
-        return Status.OK();
+        Buyer newBuyer = new Buyer(name, address, bankAccount, bankAuthCode);
+        if (buyerlist.containsKey(name)) {
+        	logger.finer("Buyer is alread registed.");
+        	return Status.error("Buyer is already registed.");
+        }
+        else {
+        	buyerlist.put(name, newBuyer);
+        	return Status.OK();
+        }
+        
+        
     }
 
     public Status registerSeller(
@@ -46,6 +57,7 @@ public class AuctionHouseImp implements AuctionHouse {
             String bankAccount) {
         logger.fine(startBanner("registerSeller " + name));
         
+        Seller Seller = new Seller(name, address, bankAccount);
         return Status.OK();      
     }
 
@@ -55,7 +67,11 @@ public class AuctionHouseImp implements AuctionHouse {
             String description,
             Money reservePrice) {
         logger.fine(startBanner("addLot " + sellerName + " " + number));
-        
+        //Lot l = new Lot
+        //logger.fine(new Lot with lot id 123 was added)
+        //seller registers lot
+        //add to catalogue
+        //logger.fine(lot with lot id 123 was added to catalogue)
         return Status.OK();    
     }
 
